@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.5 (일점오) - 보수적 가치평가 데이터 대시보드</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-amber: #fbbf24;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        .logo-group h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+        .logo-group h1 span {
+            color: var(--accent-blue);
+        }
+        .logo-group p {
+            color: var(--text-sub);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .membership-badge {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .stock-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .tab-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border-color: var(--accent-blue);
+        }
+        .hero-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+        .hero-info h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+        .hero-info .meta {
+            color: var(--text-sub);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .price-badge {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .score-box {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+        .score-title {
+            font-size: 12px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .score-val {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+        .score-desc {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-num {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background-color: #334155;
+            color: #cbd5e1;
+        }
+        .card-status {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .status-good {
+            background-color: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        .status-warn {
+            background-color: rgba(251, 191, 36, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid var(--accent-amber);
+        }
+        .status-danger {
+            background-color: rgba(248, 113, 113, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .card p.desc {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 13px;
+        }
+        .metric-row span.label {
+            color: var(--text-sub);
+        }
+        .metric-row span.val {
+            font-weight: 700;
+            color: #fff;
+        }
+        .table-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .table-section h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .blur-target {
+            filter: blur(5px);
+            user-select: none;
+            transition: filter 0.3s ease;
+        }
+        .blur-target.unlocked {
+            filter: none;
+            user-select: auto;
+        }
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(56, 189, 248, 0.05);
+            border: 1px dashed var(--accent-blue);
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+        .toggle-btn {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-group">
+            <h1>1.5 <span>(일점오)</span></h1>
+            <p>보수적 가치평가 데이터금융 서비스 프로토타입 v1.0</p>
+        </div>
+        <div class="membership-badge" id="membershipBadge">월 9,900원 프로 모드 시연중</div>
+    </header>
+
+    <div class="control-bar">
+        <span>기획안 3.2절: 프로 멤버십 블러(비공개) 처리 효과 인터랙션 테스트</span>
+        <button class="toggle-btn" onclick="toggleBlur()">블러 처리 전환 (유료/무료 보기)</button>
+    </div>
+
+    <div class="stock-selector">
+        <button class="tab-btn active" onclick="switchStock('samsung')">삼성전자 (005930)</button>
+        <button class="tab-btn" onclick="switchStock('sk')">SK하이닉스 (000660)</button>
+    </div>
+
+    <div class="hero-banner">
+        <div class="hero-info">
+            <h2 id="stockName">삼성전자 (005930)</h2>
+            <div class="meta">장 마감 기준 배치 연산 완료 · DART 1차 공시 및 거래소 수급 대조</div>
+            <div class="price-badge" id="stockPrice">60,000 원</div>
+        </div>
+        <div class="score-box">
+            <div class="score-title">1.5 종합 지수</div>
+            <div class="score-val blur-target unlocked" id="scoreVal">62.0</div>
+            <div class="score-desc" id="scoreDesc">보수적 안전마진 우수군</div>
+        </div>
+    </div>
+
+    <div class="grid-cards">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-num">지표 1 · 절대 원칙</span>
+                <span class="card-status status-good" id="badge1">충족 (견고)</span>
+            </div>
+            <h3>하방경직성 및 재무 무결성</h3>
+            <p class="desc">"최악의 상황에도 원금이 보존되는 철저한 안전마진"</p>
+            <div class="metric-row">
+                <span class="label">보수적 청산가치 (하위 25%)</span>
+                <span class="val" id="liqVal">48,000 원</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">안전마진율 (청산가치 / 현재가)</span>
+                <span class="val" id="marginVal">80.0%</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-num">지표 2 · 성장 확신</span>
+                <span class="card-status status-good" id="badge2">폭발 (양수)</span>
+            </div>
+            <h3>실질 잉여현금 창출력</h3>
+            <p class="desc">"장부 속 회계 이익이 아닌, 실제 통장에 꽂히는 진짜 잉여현금"</p>
+            <div class="metric-row">
+                <span class="label">영업CF - CAPEX (실질 FCF)</span>
+                <span class="val" id="fcfVal">4,000 억 원</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">현금흐름 교차점 판정</span>
+                <span class="val" id="cfJudge">양수 전환 (성장 확신)</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-num">지표 3 · 산업 흐름</span>
+                <span class="card-status status-good" id="badge3">온기 확산</span>
+            </div>
+            <h3>섹터 투트랙 자본 분배율</h3>
+            <p class="desc">"특정 기업이 아닌, 산업 전반으로 퍼지는 실질적 자본"</p>
+            <div class="metric-row">
+                <span class="label">섹터 전체 FCF 대비 분배율</span>
+                <span class="val" id="sectorVal">26.7%</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">산업 온기 평가</span>
+                <span class="val" id="sectorJudge">중소형주로 온기 확산</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-num">지표 4 · 괴리 포착</span>
+                <span class="card-status status-danger" id="badge4">심각 (호평 속 매도)</span>
+            </div>
+            <h3>언행 괴리지수</h3>
+            <p class="desc">"증권사 리포트의 호평과 기관의 실제 매도 물량을 대조하는 기만 포착"</p>
+            <div class="metric-row">
+                <span class="label">리포트 감성 점수 vs 기관 수급</span>
+                <span class="val blur-target unlocked" id="repVal">호평 85점 / -120억 순매도</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">괴리 위험도 판정</span>
+                <span class="val blur-target unlocked" id="discrepancyJudge">기관 매도 기만 포착</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-section">
+        <h3>배치 연산 데이터베이스 적재 결과 (2종목 대조)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>종목명</th>
+                    <th>현재가</th>
+                    <th>안전마진율</th>
+                    <th>실질 FCF</th>
+                    <th>산업 흐름</th>
+                    <th>언행 괴리지수</th>
+                    <th>1.5 종합점수</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>삼성전자</strong> (005930)</td>
+                    <td>60,000원</td>
+                    <td>80.0% (충족)</td>
+                    <td>4,000억원</td>
+                    <td>온기 확산</td>
+                    <td style="color: var(--accent-red);">심각 (호평 속 매도)</td>
+                    <td><strong class="blur-target unlocked">62.0점</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>SK하이닉스</strong> (000660)</td>
+                    <td>180,000원</td>
+                    <td>61.1% (주의)</td>
+                    <td>3,000억원</td>
+                    <td>온기 확산</td>
+                    <td style="color: var(--accent-green);">일치 (동반 매수)</td>
+                    <td><strong class="blur-target unlocked">84.4점</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const data = {
+        samsung: {
+            name: "삼성전자 (005930)",
+            price: "60,000 원",
+            score: "62.0",
+            scoreDesc: "보수적 안전마진 우수군 (기관 기만 주의)",
+            b1: { text: "충족 (견고)", class: "status-good" },
+            liq: "48,000 원",
+            margin: "80.0%",
+            b2: { text: "폭발 (양수)", class: "status-good" },
+            fcf: "4,000 억 원",
+            cfJudge: "양수 전환 (성장 확신)",
+            b3: { text: "온기 확산", class: "status-good" },
+            sector: "26.7%",
+            sectorJudge: "중소형주로 온기 확산",
+            b4: { text: "심각 (호평 속 매도)", class: "status-danger" },
+            rep: "호평 85점 / -120억 순매도",
+            discJudge: "기관 매도 기만 포착"
+        },
+        sk: {
+            name: "SK하이닉스 (000660)",
+            price: "180,000 원",
+            score: "84.4",
+            scoreDesc: "실질 FCF 및 기관 수급 동반 일치 (구조적 우상향)",
+            b1: { text: "주의 (여유부족)", class: "status-warn" },
+            liq: "110,000 원",
+            margin: "61.1%",
+            b2: { text: "폭발 (양수)", class: "status-good" },
+            fcf: "3,000 억 원",
+            cfJudge: "양수 전환 (성장 확신)",
+            b3: { text: "온기 확산", class: "status-good" },
+            sector: "20.0%",
+            sectorJudge: "중소형주로 온기 확산",
+            b4: { text: "일치 (동반 매수)", class: "status-good" },
+            rep: "호평 75점 / +250억 순매수",
+            discJudge: "수급 신뢰도 높음"
+        }
+    };
+
+    let isBlurred = false;
+
+    function switchStock(key) {
+        const item = data[key];
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if (key === 'samsung') buttons[0].classList.add('active');
+        else buttons[1].classList.add('active');
+
+        document.getElementById('stockName').innerText = item.name;
+        document.getElementById('stockPrice').innerText = item.price;
+        document.getElementById('scoreVal').innerText = item.score;
+        document.getElementById('scoreDesc').innerText = item.scoreDesc;
+
+        updateBadge('badge1', item.b1);
+        document.getElementById('liqVal').innerText = item.liq;
+        document.getElementById('marginVal').innerText = item.margin;
+
+        updateBadge('badge2', item.b2);
+        document.getElementById('fcfVal').innerText = item.fcf;
+        document.getElementById('cfJudge').innerText = item.cfJudge;
+
+        updateBadge('badge3', item.b3);
+        document.getElementById('sectorVal').innerText = item.sector;
+        document.getElementById('sectorJudge').innerText = item.sectorJudge;
+
+        updateBadge('badge4', item.b4);
+        document.getElementById('repVal').innerText = item.rep;
+        document.getElementById('discrepancyJudge').innerText = item.discJudge;
+    }
+
+    function updateBadge(id, config) {
+        const el = document.getElementById(id);
+        el.className = 'card-status ' + config.class;
+        el.innerText = config.text;
+    }
+
+    function toggleBlur() {
+        isBlurred = !isBlurred;
+        const targets = document.querySelectorAll('.blur-target');
+        const badge = document.getElementById('membershipBadge');
+        targets.forEach(t => {
+            if (isBlurred) {
+                t.classList.remove('unlocked');
+            } else {
+                t.classList.add('unlocked');
+            }
+        });
+        if (isBlurred) {
+            badge.innerText = '무료 회원 모드 (핵심 지수 블러 처리)';
+            badge.style.borderColor = '#fbbf24';
+            badge.style.color = '#fbbf24';
+        } else {
+            badge.innerText = '월 9,900원 프로 모드 시연중';
+            badge.style.borderColor = 'var(--accent-blue)';
+            badge.style.color = 'var(--accent-blue)';
+        }
+    }
+</script>
+
+</body>
+</html>
